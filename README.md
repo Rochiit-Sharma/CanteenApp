@@ -51,3 +51,9 @@ start-windows.bat, start-linux.sh
 ```
 
 Security: this local classroom demo stores its demo passwords in plain text at the user's request. Sessions, CSRF tokens, role-based server checks, generic login errors, input checks, JDBC prepared statements, and basic security headers are still used. Never deploy with plain-text passwords. This is a teaching demo, not a production payment system. For production, use HTTPS, a least-privilege DB account, secure cookie configuration, login throttling, stronger account provisioning and auditing. No actual payment is processed.
+
+
+## Troubleshooting
+
+- **VS Code says `package jakarta.servlet does not exist`:** open the project root folder (the folder containing `src` and `WEB-INF`). The checked-in `.vscode/settings.json` references `C:/apache-tomcat/lib/servlet-api.jar` and JARs in `WEB-INF/lib`. Confirm the Tomcat JAR exists, then run **Java: Clean Java Language Server Workspace** from the VS Code Command Palette and reload the window. This editor warning is separate from the command-line build; `start-windows.bat` compiles with Tomcat's servlet JAR.
+- **Login does not work:** first open `http://localhost:8080/CanteenApp/api/health`. A healthy backend returns JSON with `"status":"ok"`, `"database":"connected"`, and `"demoAccountsReady":true`. If the endpoint fails, inspect the newest `catalina` log under `C:\\apache-tomcat\\logs` for `Database startup failed`, access-denied, or missing JDBC driver errors. Demo credentials are `student/student` and `admin/admin` for local testing only.

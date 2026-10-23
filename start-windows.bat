@@ -31,6 +31,14 @@ if not exist "%CATALINA_HOME%\lib\servlet-api.jar" (
   exit /b 1
 )
 set "CATALINA_BASE=%CATALINA_HOME%"
+
+REM Clear inherited JVM options that can override Tomcat's own -Dcatalina.home/-Dcatalina.base
+REM settings. A malformed JAVA_OPTS value can corrupt Tomcat paths and stop startup.
+set "JAVA_OPTS="
+set "CATALINA_OPTS="
+set "JDK_JAVA_OPTIONS="
+set "_JAVA_OPTIONS="
+
 set "APP_NAME=CanteenApp"
 set "APP_URL=http://localhost:8080/%APP_NAME%"
 set "DEST=%CATALINA_BASE%\webapps\%APP_NAME%"

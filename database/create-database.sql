@@ -75,6 +75,24 @@ FROM (
 ) AS seed
 WHERE NOT EXISTS (SELECT 1 FROM menu_items LIMIT 1);
 
+-- Migrate an existing database created by the older password_hash schema.
+SET @has_old_password_column = (
+  SELECT COUNT(*) FROM information_schema.columns
+  WHERE table_schema = DATABASE() AND table_name = 'users' AND column_name = 'password_hash'
+);
+SET @has_password_column = (
+  SELECT COUNT(*) FROM information_schema.columns
+  WHERE table_schema = DATABASE() AND table_name = 'users' AND column_name = 'password'
+);
+SET @password_migration_sql = IF(
+  @has_old_password_column > 0 AND @has_password_column = 0,
+  'ALTER TABLE users CHANGE COLUMN password_hash password VARCHAR(255) NOT NULL',
+  'SELECT 1'
+);
+PREPARE password_migration_stmt FROM @password_migration_sql;
+EXECUTE password_migration_stmt;
+DEALLOCATE PREPARE password_migration_stmt;
+
 -- Local classroom demo accounts (plain-text passwords; never use this setup in production).
 -- Safe to rerun: resets these two demo accounts to the credentials shown here.
 INSERT INTO users (username, full_name, password, role)

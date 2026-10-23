@@ -38,8 +38,9 @@ set "DEST=%CATALINA_BASE%\webapps\%APP_NAME%"
 REM MySQL JDBC configuration. Java uses these environment variables.
 set "DB_URL=jdbc:mysql://localhost:3306/canteen_app?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata"
 set "DB_USER=root"
-REM Do not set DB_PASSWORD here: when unset, Java defaults it to an empty string.
-REM If your MySQL root account has a password, uncomment and edit the next line.
+REM This local demo assumes MySQL root has no password. Clear inherited values to avoid stale credentials.
+set "DB_PASSWORD="
+REM If your MySQL root account has a password, comment the line above and set it here:
 REM set "DB_PASSWORD=replace_with_your_local_password"
 
 REM Ensure we're running from the repository root.

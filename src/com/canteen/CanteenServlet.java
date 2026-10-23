@@ -230,7 +230,7 @@ public class CanteenServlet extends HttpServlet {
   private static final class Database {
     static Connection connect()throws SQLException{
       String url=System.getenv().getOrDefault("DB_URL","jdbc:mysql://localhost:3306/canteen_app?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata");
-      String user=System.getenv().getOrDefault("DB_USER","root"),pw=System.getenv().getOrDefault("DB_PASSWORD","root");
+      String user=System.getenv().getOrDefault("DB_USER","root"),pw=System.getenv().getOrDefault("DB_PASSWORD","");
       try{Class.forName("com.mysql.cj.jdbc.Driver");}catch(ClassNotFoundException e){throw new SQLException("Install MySQL Connector/J in WEB-INF/lib.",e);}
       return DriverManager.getConnection(url,user,pw);
     }

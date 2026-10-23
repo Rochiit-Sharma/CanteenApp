@@ -98,7 +98,7 @@ echo   CATALINA_HOME=%CATALINA_HOME%
 echo   CATALINA_BASE=%CATALINA_BASE%
 echo   DB_URL=%DB_URL%
 echo   DB_USER=%DB_USER%
-echo   DB_PASSWORD= [empty unless already set in the parent environment]
+echo   DB_PASSWORD= [empty for local MySQL setup]
 echo   APP_URL=%APP_URL%
 echo.
 echo.

@@ -95,9 +95,12 @@ echo   DB_USER=%DB_USER%
 echo   DB_PASSWORD= [empty unless already set in the parent environment]
 echo   APP_URL=%APP_URL%
 echo.
-echo IMPORTANT: This script configures variables only for this script and child processes.
-echo If Tomcat was started separately, it will NOT receive these variables.
-echo To run Tomcat with these settings, use the separate start-tomcat-windows.bat script.
-echo If Tomcat is already running, stop it before starting it again.
+echo.
+echo Starting Tomcat with the configured environment...
+call "%CATALINA_HOME%\bin\startup.bat"
+if errorlevel 1 (
+  echo WARNING: Tomcat startup returned a non-zero status. Check the Tomcat logs.
+)
+echo.
 echo Open %APP_URL%
 endlocal

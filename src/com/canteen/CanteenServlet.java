@@ -86,13 +86,13 @@ public class CanteenServlet extends HttpServlet {
   private void login(HttpServletRequest req,HttpServletResponse resp) throws Exception {
     String username=param(req,"username",80).trim(), password=param(req,"password",200);
     if(username.isEmpty()||password.isEmpty()) throw new ApiError(400,"Enter your username and password.");
-    Map<String,Object> found=null; String hash=null;
+    Map<String,Object> found=null; String storedPassword=null;
     try(Connection c=Database.connect();PreparedStatement ps=c.prepareStatement("SELECT id,username,full_name,password,role FROM users WHERE username=?")){
       ps.setString(1,username);try(ResultSet rs=ps.executeQuery()){if(rs.next()){
-        found=Json.obj("id",rs.getLong("id"),"username",rs.getString("username"),"fullName",rs.getString("full_name"),"role",rs.getString("role"));hash=rs.getString("password");
+        found=Json.obj("id",rs.getLong("id"),"username",rs.getString("username"),"fullName",rs.getString("full_name"),"role",rs.getString("role"));storedPassword=rs.getString("password");
       }}
     }
-    if(found==null||hash==null||!password.equals(hash)) throw new ApiError(401,"Incorrect username or password.");
+    if(found==null||storedPassword==null||!password.equals(storedPassword)) throw new ApiError(401,"Incorrect username or password.");
     HttpSession old=req.getSession(false);if(old!=null)old.invalidate();
     HttpSession session=req.getSession(true);req.changeSessionId();session.setMaxInactiveInterval(1800);
     session.setAttribute("user",found);String token=token(32);session.setAttribute("csrf",token);

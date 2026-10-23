@@ -62,6 +62,11 @@ if not exist "%CATALINA_HOME%\bin\shutdown.bat" (
   exit /b 1
 )
 
+echo.
+echo Stopping any previously running Tomcat instance before deploying...
+call "%CATALINA_HOME%\bin\shutdown.bat"
+timeout /t 3 /nobreak >nul
+
 if not exist "WEB-INF\classes" mkdir "WEB-INF\classes"
 echo.
 echo [1/3] Compiling Java source...

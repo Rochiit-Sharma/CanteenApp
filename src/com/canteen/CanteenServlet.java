@@ -260,7 +260,7 @@ public class CanteenServlet extends HttpServlet {
   private static final class Passwords {
     static String hash(String password){byte[] salt=new byte[16];RANDOM.nextBytes(salt);byte[] h=derive(password.toCharArray(),salt,210000);Base64.Encoder e=Base64.getUrlEncoder().withoutPadding();return "pbkdf2_sha256$210000$"+e.encodeToString(salt)+"$"+e.encodeToString(h);}
     static boolean verify(String password,String encoded){try{String[] p=encoded.split("\\$",-1);if(p.length!=4||!"pbkdf2_sha256".equals(p[0]))return false;int rounds=Integer.parseInt(p[1]);if(rounds<100000||rounds>2000000)return false;return MessageDigest.isEqual(Base64.getUrlDecoder().decode(p[3]),derive(password.toCharArray(),Base64.getUrlDecoder().decode(p[2]),rounds));}catch(RuntimeException e){return false;}}
-    static byte[] derive(char[] password,byte[] salt,int rounds){PBEKeySpec spec=new PBEKeySpec(password,salt,rounds,256);try{return SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).getEncoded();}catch(Exception e){throw new IllegalStateException("PBKDF2WithHmacSHA256 unavailable",e);}finally{spec.clearPassword();Arrays.fill(password,'\\0');}}
+    static byte[] derive(char[] password,byte[] salt,int rounds){PBEKeySpec spec=new PBEKeySpec(password,salt,rounds,256);try{return SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).getEncoded();}catch(Exception e){throw new IllegalStateException("PBKDF2WithHmacSHA256 unavailable",e);}finally{spec.clearPassword();Arrays.fill(password,(char)0);}}
   }
 
   private static final class Json {

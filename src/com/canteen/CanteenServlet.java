@@ -273,6 +273,25 @@ public class CanteenServlet extends HttpServlet {
       if(v instanceof Iterable<?>){StringJoiner j=new StringJoiner(",","[","]");for(Object x:(Iterable<?>)v)j.add(stringify(x));return j.toString();}
       return quote(String.valueOf(v));
     }
-    static String quote(String s){StringBuilder b=new StringBuilder("\"");for(int i=0;i<s.length();i++){char c=s.charAt(i);switch(c){case '"':b.append("\\\"");break;case '\\\\':b.append("\\\\\\\\");break;case '\\b':b.append("\\\\b");break;case '\\f':b.append("\\\\f");break;case '\\n':b.append("\\\\n");break;case '\\r':b.append("\\\\r");break;case '\\t':b.append("\\\\t");break;default:if(c<32)b.append(String.format("\\\\u%04x",(int)c));else b.append(c);}}return b.append('"').toString();}
+    static String quote(String s) {
+      StringBuilder b = new StringBuilder();
+      b.append('"');
+      for (int i=0;i<s.length();i++) {
+        char c=s.charAt(i);
+        switch(c) {
+          case '"': b.append((char)92).append('"'); break;
+          case 92: b.append((char)92).append((char)92); break;
+          case 8: b.append((char)92).append('b'); break;
+          case 12: b.append((char)92).append('f'); break;
+          case 10: b.append((char)92).append('n'); break;
+          case 13: b.append((char)92).append('r'); break;
+          case 9: b.append((char)92).append('t'); break;
+          default:
+            if(c<32) b.append((char)92).append('u').append(String.format("%04x",(int)c));
+            else b.append(c);
+        }
+      }
+      return b.append('"').toString();
+    }
   }
 }

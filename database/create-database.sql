@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   username VARCHAR(80) NOT NULL UNIQUE,
   full_name VARCHAR(120) NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
+  password VARCHAR(255) NOT NULL,
   role VARCHAR(16) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT chk_user_role CHECK (role IN ('STUDENT', 'ADMIN'))
@@ -75,8 +75,17 @@ FROM (
 ) AS seed
 WHERE NOT EXISTS (SELECT 1 FROM menu_items LIMIT 1);
 
--- Demo users are created by CanteenServlet at startup using its PBKDF2 password hasher:
--- admin/admin and student/student. Do not insert plaintext passwords into password_hash.
--- After the app starts, verify with:
+-- Local classroom demo accounts (plain-text passwords; never use this setup in production).
+-- Safe to rerun: resets these two demo accounts to the credentials shown here.
+INSERT INTO users (username, full_name, password, role)
+VALUES
+  ('admin', 'Canteen Administrator', 'admin', 'ADMIN'),
+  ('student', 'Demo Student', 'student', 'STUDENT')
+ON DUPLICATE KEY UPDATE
+  full_name = VALUES(full_name),
+  password = VALUES(password),
+  role = VALUES(role);
+
+-- Verify:
 -- SELECT id, username, full_name, role FROM users;
 -- SELECT id, name, category, price, available FROM menu_items;

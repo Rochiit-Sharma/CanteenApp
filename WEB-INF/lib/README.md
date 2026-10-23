@@ -1,0 +1,1 @@
+Place the official MySQL Connector/J JAR in this directory and name it mysql-connector-j.jar. Download from https://dev.mysql.com/downloads/connector/j/.

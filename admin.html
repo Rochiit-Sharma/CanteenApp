@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>CanteenApp · Admin</title><link rel="stylesheet" href="assets/styles.css"><script src="assets/app.js" defer></script></head>
+<body data-page="admin">
+<header class="topbar"><a class="brand-link" href="admin.html"><span class="brand-mark small">C</span><span>CanteenApp <span class="admin-tag">ADMIN</span></span></a><div class="topbar-right"><span class="user-chip" id="current-user">Administrator</span><button class="button quiet" data-action="logout">Sign out</button></div></header>
+<main class="dashboard"><section class="welcome-row"><div><p class="eyebrow">CANTEEN CONTROL</p><h1>Good afternoon, admin.</h1><p class="muted">Manage the menu and keep orders moving.</p></div><div class="today-pill"><span class="status-dot"></span> Admin dashboard</div></section>
+<section id="stats" class="stats-grid"><div class="stat-card skeleton"></div><div class="stat-card skeleton"></div><div class="stat-card skeleton"></div></section>
+<nav class="tabs" aria-label="Admin pages"><button class="tab active" data-view="admin-menu">Menu management</button><button class="tab" data-view="admin-orders">Orders & tickets</button></nav>
+<div id="notice" class="notice" role="status" aria-live="polite"></div><section id="content" class="content-area"><div class="loading">Loading canteen data…</div></section><footer class="page-footer">Admin tools <span>·</span> CanteenApp</footer></main></body></html>

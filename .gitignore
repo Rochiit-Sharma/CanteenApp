@@ -1,0 +1,5 @@
+# MySQL driver is downloaded separately, never commit binaries/credentials
+WEB-INF/lib/*.jar
+WEB-INF/classes/
+*.class
+.env

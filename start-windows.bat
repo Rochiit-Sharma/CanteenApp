@@ -108,5 +108,9 @@ if errorlevel 1 (
   echo WARNING: Tomcat startup returned a non-zero status. Check the Tomcat logs.
 )
 echo.
+echo Checking backend and database readiness...
+timeout /t 5 /nobreak >nul
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference='SilentlyContinue'; try { $r=Invoke-WebRequest -Uri '%APP_URL%/api/health' -UseBasicParsing -TimeoutSec 8; Write-Host ('Health check: ' + $r.Content) } catch { Write-Host ('Health check failed: ' + $_.Exception.Message); Write-Host 'Inspect logs under C:\apache-tomcat\logs\.' }"
+echo.
 echo Open %APP_URL%
 endlocal

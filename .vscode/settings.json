@@ -1,0 +1,10 @@
+{
+  "java.project.sourcePaths": [
+    "src"
+  ],
+  "java.project.outputPath": "WEB-INF/classes",
+  "java.project.referencedLibraries": [
+    "C:/apache-tomcat/lib/servlet-api.jar",
+    "WEB-INF/lib/**/*.jar"
+  ]
+}

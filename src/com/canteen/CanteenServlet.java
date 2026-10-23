@@ -24,6 +24,22 @@ public class CanteenServlet extends HttpServlet {
   @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     headers(resp); String path = path(req);
     try {
+      if ("/health".equals(path)) {
+        try (Connection c = Database.connect(); Statement s = c.createStatement()) {
+          int demoAccounts = 0, menuCount = 0;
+          try (ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM users WHERE (username='student' AND password='student' AND role='STUDENT') OR (username='admin' AND password='admin' AND role='ADMIN')")) {
+            if (rs.next()) demoAccounts = rs.getInt(1);
+          }
+          try (ResultSet rs = s.executeQuery("SELECT COUNT(*) FROM menu_items WHERE available=TRUE")) {
+            if (rs.next()) menuCount = rs.getInt(1);
+          }
+          send(resp, 200, Json.obj("status", "ok", "database", "connected", "demoAccountsReady", demoAccounts == 2, "availableMenuItems", menuCount));
+        } catch (Exception e) {
+          getServletContext().log("Health check failed", e);
+          send(resp, 503, Json.obj("status", "error", "message", "Database check failed. Inspect the Tomcat log."));
+        }
+        return;
+      }
       if ("/me".equals(path)) {
         Map<String,Object> user = user(req);
         if (user == null) { send(resp,401,Json.obj("error","Please sign in.")); return; }

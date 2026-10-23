@@ -96,7 +96,7 @@ echo Configuration for this script:
 echo   JAVA_HOME=%JAVA_HOME%
 echo   CATALINA_HOME=%CATALINA_HOME%
 echo   CATALINA_BASE=%CATALINA_BASE%
-echo   DB_URL=%DB_URL%
+echo   DB_URL=[configured; URL omitted because JDBC URLs contain CMD special characters]
 echo   DB_USER=%DB_USER%
 echo   DB_PASSWORD= [empty for local MySQL setup]
 echo   APP_URL=%APP_URL%

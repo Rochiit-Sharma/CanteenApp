@@ -28,12 +28,12 @@ These are local-demo accounts only. Do not deploy publicly with demo credentials
    The application creates its tables and sample rows on startup.
 2. Download MySQL Connector/J from https://dev.mysql.com/downloads/connector/j/ and place the JAR at `WEB-INF/lib/mysql-connector-j.jar` (rename the versioned JAR to that filename). The driver is not committed.
 3. Set `CATALINA_HOME` to your Tomcat folder. Keep this project outside Tomcat's `webapps` directory.
-4. Database defaults: URL `jdbc:mysql://localhost:3306/canteen_app?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata`, user `root`, password `root`. This matches the requested setup. If your local MySQL root password differs, set `DB_PASSWORD`; you can also set `DB_USER` and `DB_URL`.
-   - Windows CMD: `set DB_USER=root` and `set DB_PASSWORD=root`
-   - Linux: `export DB_USER=root; export DB_PASSWORD=root`
-   Set these in the same terminal used to start Tomcat.
-5. Run `start-windows.bat` in Windows CMD, or on Linux run `chmod +x start-linux.sh && ./start-linux.sh`. These compile the Java source with `javac` and copy the application to Tomcat—no build tool.
-6. Start/restart Tomcat: Windows `%CATALINA_HOME%\\bin\\startup.bat`; Linux `$CATALINA_HOME/bin/startup.sh`.
+4. Database defaults: URL `jdbc:mysql://localhost:3306/canteen_app?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata`, user `root`, and **empty password** (for a local MySQL root account with no password). If your MySQL account has a password, configure `DB_PASSWORD` before starting Tomcat; you can also set `DB_USER` and `DB_URL`. Never commit real passwords to GitHub.
+   - Windows CMD for a password-protected account: `set "DB_USER=root"` and `set "DB_PASSWORD=your_actual_password"` in the same terminal that launches Tomcat.
+   - Linux: `export DB_USER=root; export DB_PASSWORD='your_actual_password'`.
+   - Windows CMD cannot keep an environment variable defined with an empty value using `set "DB_PASSWORD="`; that command unsets it. The Java default is empty when `DB_PASSWORD` is unset.
+5. On Windows, `start-windows.bat` automatically uses `C:\\apache-tomcat` if `CATALINA_HOME` is not set and that folder exists. Otherwise set `CATALINA_HOME` to your Tomcat installation folder. Run `start-windows.bat` from the project folder. On Linux run `chmod +x start-linux.sh && ./start-linux.sh`. These compile the Java source with `javac` and copy the app to Tomcat—no build tool.
+6. Start/restart Tomcat: Windows `%CATALINA_HOME%\\bin\\startup.bat`; Linux `$CATALINA_HOME/bin/startup.sh`. `CATALINA_HOME` is the path to the Tomcat installation, not a database setting. The app does not require a separate Catalina configuration file for this setup.
 7. Visit http://localhost:8080/CanteenApp/
 
 ## Try the flow

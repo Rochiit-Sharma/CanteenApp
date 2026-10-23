@@ -10,8 +10,6 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.sql.*;
 import java.util.*;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 
 @WebServlet(name="CanteenServlet", urlPatterns="/api/*", loadOnStartup=1)
 public class CanteenServlet extends HttpServlet {
@@ -89,12 +87,12 @@ public class CanteenServlet extends HttpServlet {
     String username=param(req,"username",80).trim(), password=param(req,"password",200);
     if(username.isEmpty()||password.isEmpty()) throw new ApiError(400,"Enter your username and password.");
     Map<String,Object> found=null; String hash=null;
-    try(Connection c=Database.connect();PreparedStatement ps=c.prepareStatement("SELECT id,username,full_name,password_hash,role FROM users WHERE username=?")){
+    try(Connection c=Database.connect();PreparedStatement ps=c.prepareStatement("SELECT id,username,full_name,password,role FROM users WHERE username=?")){
       ps.setString(1,username);try(ResultSet rs=ps.executeQuery()){if(rs.next()){
-        found=Json.obj("id",rs.getLong("id"),"username",rs.getString("username"),"fullName",rs.getString("full_name"),"role",rs.getString("role"));hash=rs.getString("password_hash");
+        found=Json.obj("id",rs.getLong("id"),"username",rs.getString("username"),"fullName",rs.getString("full_name"),"role",rs.getString("role"));hash=rs.getString("password");
       }}
     }
-    if(found==null||hash==null||!Passwords.verify(password,hash)) throw new ApiError(401,"Incorrect username or password.");
+    if(found==null||hash==null||!password.equals(hash)) throw new ApiError(401,"Incorrect username or password.");
     HttpSession old=req.getSession(false);if(old!=null)old.invalidate();
     HttpSession session=req.getSession(true);req.changeSessionId();session.setMaxInactiveInterval(1800);
     session.setAttribute("user",found);String token=token(32);session.setAttribute("csrf",token);
@@ -236,7 +234,8 @@ public class CanteenServlet extends HttpServlet {
     }
     static void init()throws SQLException{
       try(Connection c=connect();Statement s=c.createStatement()){
-        s.executeUpdate("CREATE TABLE IF NOT EXISTS users(id BIGINT PRIMARY KEY AUTO_INCREMENT,username VARCHAR(80) NOT NULL UNIQUE,full_name VARCHAR(120) NOT NULL,password_hash VARCHAR(255) NOT NULL,role VARCHAR(16) NOT NULL,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,CONSTRAINT chk_user_role CHECK(role IN ('STUDENT','ADMIN'))) ENGINE=InnoDB");
+        s.executeUpdate("CREATE TABLE IF NOT EXISTS users(id BIGINT PRIMARY KEY AUTO_INCREMENT,username VARCHAR(80) NOT NULL UNIQUE,full_name VARCHAR(120) NOT NULL,password VARCHAR(255) NOT NULL,role VARCHAR(16) NOT NULL,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,CONSTRAINT chk_user_role CHECK(role IN ('STUDENT','ADMIN'))) ENGINE=InnoDB");
+        ensurePasswordColumn(c,s);
         s.executeUpdate("CREATE TABLE IF NOT EXISTS menu_items(id BIGINT PRIMARY KEY AUTO_INCREMENT,name VARCHAR(100) NOT NULL,description VARCHAR(500) NOT NULL DEFAULT '',category VARCHAR(60) NOT NULL DEFAULT 'Meals',price DECIMAL(10,2) NOT NULL,available BOOLEAN NOT NULL DEFAULT TRUE,created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB");
         s.executeUpdate("CREATE TABLE IF NOT EXISTS cart_items(user_id BIGINT NOT NULL,menu_item_id BIGINT NOT NULL,quantity INT NOT NULL DEFAULT 1,updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,PRIMARY KEY(user_id,menu_item_id),CONSTRAINT fk_cart_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,CONSTRAINT fk_cart_menu FOREIGN KEY(menu_item_id) REFERENCES menu_items(id) ON DELETE CASCADE,CONSTRAINT chk_cart_quantity CHECK(quantity BETWEEN 1 AND 20)) ENGINE=InnoDB");
         s.executeUpdate("CREATE TABLE IF NOT EXISTS orders(id BIGINT PRIMARY KEY AUTO_INCREMENT,user_id BIGINT NOT NULL,ticket_code VARCHAR(24) NOT NULL UNIQUE,total DECIMAL(10,2) NOT NULL,status VARCHAR(20) NOT NULL DEFAULT 'RECEIVED',created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,CONSTRAINT fk_order_user FOREIGN KEY(user_id) REFERENCES users(id),INDEX idx_orders_user_created(user_id,created_at),INDEX idx_orders_status(status)) ENGINE=InnoDB");
@@ -244,10 +243,22 @@ public class CanteenServlet extends HttpServlet {
       }
       seedUser("admin","admin","Canteen Administrator","ADMIN");seedUser("student","student","Demo Student","STUDENT");seedMenu();
     }
+    static void ensurePasswordColumn(Connection c, Statement s) throws SQLException {
+      boolean oldColumn=false, newColumn=false;
+      try(ResultSet cols=c.getMetaData().getColumns(c.getCatalog(),null,"users",null)){
+        while(cols.next()){
+          String name=cols.getString("COLUMN_NAME");
+          if("password_hash".equalsIgnoreCase(name)) oldColumn=true;
+          if("password".equalsIgnoreCase(name)) newColumn=true;
+        }
+      }
+      if(oldColumn && !newColumn) {
+        s.executeUpdate("ALTER TABLE users CHANGE COLUMN password_hash password VARCHAR(255) NOT NULL");
+      }
+    }
     static void seedUser(String name,String password,String fullName,String role)throws SQLException{
-      try(Connection c=connect();PreparedStatement q=c.prepareStatement("SELECT id FROM users WHERE username=?")){q.setString(1,name);try(ResultSet r=q.executeQuery()){if(r.next())return;}}
-      try(Connection c=connect();PreparedStatement p=c.prepareStatement("INSERT INTO users(username,full_name,password_hash,role) VALUES(?,?,?,?)")){
-        p.setString(1,name);p.setString(2,fullName);p.setString(3,Passwords.hash(password));p.setString(4,role);p.executeUpdate();
+      try(Connection c=connect();PreparedStatement p=c.prepareStatement("INSERT INTO users(username,full_name,password,role) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE full_name=VALUES(full_name),password=VALUES(password),role=VALUES(role)")){
+        p.setString(1,name);p.setString(2,fullName);p.setString(3,password);p.setString(4,role);p.executeUpdate();
       }
     }
     static void seedMenu()throws SQLException{
@@ -255,12 +266,6 @@ public class CanteenServlet extends HttpServlet {
       String[][] items={{"Masala Dosa","Crispy dosa with potato masala and chutney","Breakfast","65.00"},{"Veg Sandwich","Grilled sandwich with fresh vegetables","Snacks","55.00"},{"Paneer Rice Bowl","Paneer, rice and house masala","Meals","110.00"},{"Samosa (2 pcs)","Golden pastry with spiced potato filling","Snacks","30.00"},{"Cold Coffee","Chilled coffee with milk","Drinks","50.00"},{"Chocolate Brownie","Soft chocolate brownie","Desserts","45.00"}};
       try(Connection c=connect();PreparedStatement p=c.prepareStatement("INSERT INTO menu_items(name,description,category,price,available) VALUES(?,?,?,?,TRUE)")){for(String[] i:items){p.setString(1,i[0]);p.setString(2,i[1]);p.setString(3,i[2]);p.setBigDecimal(4,new BigDecimal(i[3]));p.addBatch();}p.executeBatch();}
     }
-  }
-
-  private static final class Passwords {
-    static String hash(String password){byte[] salt=new byte[16];RANDOM.nextBytes(salt);byte[] h=derive(password.toCharArray(),salt,210000);Base64.Encoder e=Base64.getUrlEncoder().withoutPadding();return "pbkdf2_sha256$210000$"+e.encodeToString(salt)+"$"+e.encodeToString(h);}
-    static boolean verify(String password,String encoded){try{String[] p=encoded.split("\\$",-1);if(p.length!=4||!"pbkdf2_sha256".equals(p[0]))return false;int rounds=Integer.parseInt(p[1]);if(rounds<100000||rounds>2000000)return false;return MessageDigest.isEqual(Base64.getUrlDecoder().decode(p[3]),derive(password.toCharArray(),Base64.getUrlDecoder().decode(p[2]),rounds));}catch(RuntimeException e){return false;}}
-    static byte[] derive(char[] password,byte[] salt,int rounds){PBEKeySpec spec=new PBEKeySpec(password,salt,rounds,256);try{return SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).getEncoded();}catch(Exception e){throw new IllegalStateException("PBKDF2WithHmacSHA256 unavailable",e);}finally{spec.clearPassword();Arrays.fill(password,(char)0);}}
   }
 
   private static final class Json {

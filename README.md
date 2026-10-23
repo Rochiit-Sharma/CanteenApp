@@ -2,7 +2,7 @@
 
 Plain HTML/CSS/JavaScript + Java Servlets on Tomcat 10.1+ + MySQL JDBC. No Maven, Gradle, npm, UI framework, or JSON dependency.
 
-Features: PRN/username sign-in; PBKDF2-HMAC-SHA-256 salted password hashes (256-bit derived hash); session authentication; student/admin role checks; menu, cart, orders and pickup ticket codes; admin menu/order management; CSRF protection for state-changing requests; parameterized SQL.
+Features: PRN/username sign-in; local-demo plain-text passwords; session authentication; student/admin role checks; menu, cart, orders and pickup ticket codes; admin menu/order management; CSRF protection for state-changing requests; parameterized SQL.
 
 ## Demo accounts
 
@@ -11,7 +11,7 @@ Features: PRN/username sign-in; PBKDF2-HMAC-SHA-256 salted password hashes (256-
 | Admin | `admin` | `admin` |
 | Student | `student` | `student` |
 
-These are local-demo accounts only. Do not deploy publicly with demo credentials.
+These are local-demo accounts only. Passwords are stored in plain text at the user's request; this is insecure and must never be used in production or on a public server.
 
 ## Requirements
 - JDK 17+
@@ -25,7 +25,7 @@ These are local-demo accounts only. Do not deploy publicly with demo credentials
    ```sql
    CREATE DATABASE IF NOT EXISTS canteen_app CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
-   The application creates its tables and sample rows on startup.
+   The SQL script creates the tables, sample menu rows, and demo users. The application also creates missing tables and resets the two demo accounts on startup.
 2. Download MySQL Connector/J from https://dev.mysql.com/downloads/connector/j/ and place the JAR at `WEB-INF/lib/mysql-connector-j.jar` (rename the versioned JAR to that filename). The driver is not committed.
 3. Set `CATALINA_HOME` to your Tomcat folder. Keep this project outside Tomcat's `webapps` directory.
 4. Database defaults: URL `jdbc:mysql://localhost:3306/canteen_app?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata`, user `root`, and **empty password** (for a local MySQL root account with no password). If your MySQL account has a password, configure `DB_PASSWORD` before starting Tomcat; you can also set `DB_USER` and `DB_URL`. Never commit real passwords to GitHub.

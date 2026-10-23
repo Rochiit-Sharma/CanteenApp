@@ -59,16 +59,11 @@ if not exist "%CATALINA_HOME%\bin\startup.bat" (
   echo ERROR: startup.bat not found under "%CATALINA_HOME%\bin".
   exit /b 1
 )
-if not exist "%CATALINA_HOME%\bin\shutdown.bat" (
-  echo ERROR: shutdown.bat not found under "%CATALINA_HOME%\bin".
-  exit /b 1
-)
 
 echo.
-echo Stopping any previously running Tomcat instance before deploying...
-call "%CATALINA_HOME%\bin\shutdown.bat"
-timeout /t 3 /nobreak >nul
-
+echo This script will not stop an already running Tomcat instance.
+echo If Tomcat is already running, stop it from its own console first.
+echo.
 if not exist "WEB-INF\classes" mkdir "WEB-INF\classes"
 echo.
 echo [1/3] Compiling Java source...
@@ -100,19 +95,17 @@ echo   CATALINA_HOME=%CATALINA_HOME%
 echo   CATALINA_BASE=%CATALINA_BASE%
 echo   DB_URL=[configured; URL omitted because JDBC URLs contain CMD special characters]
 echo   DB_USER=%DB_USER%
-echo   DB_PASSWORD= [empty for local MySQL setup]
+echo   DB_PASSWORD=[configured in environment; value hidden]
 echo   APP_URL=%APP_URL%
 echo.
 echo.
-echo Starting Tomcat with the configured environment...
-call "%CATALINA_HOME%\bin\startup.bat"
-if errorlevel 1 (
-  echo WARNING: Tomcat startup returned a non-zero status. Check the Tomcat logs.
-)
+echo Starting Tomcat in this window so startup errors remain visible...
+echo Keep this window open while using CanteenApp.
+echo Press Ctrl+C to stop Tomcat.
 echo.
-echo Checking backend and database readiness...
-timeout /t 5 /nobreak >nul
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$ProgressPreference='SilentlyContinue'; try { $r=Invoke-WebRequest -Uri '%APP_URL%/api/health' -UseBasicParsing -TimeoutSec 8; Write-Host ('Health check: ' + $r.Content) } catch { Write-Host ('Health check failed: ' + $_.Exception.Message); Write-Host 'Inspect logs under C:\apache-tomcat\logs\.' }"
+call "%CATALINA_HOME%\bin\catalina.bat" run
+
 echo.
-echo Open %APP_URL%
+echo Tomcat has stopped. Review the errors above or the logs in "%CATALINA_HOME%\logs".
+pause
 endlocal

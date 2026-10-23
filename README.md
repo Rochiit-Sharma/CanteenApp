@@ -50,4 +50,4 @@ database/create-database.sql
 start-windows.bat, start-linux.sh
 ```
 
-Security: passwords are hashed with an individual random salt and PBKDF2-HMAC-SHA-256; sessions, CSRF tokens, role-based server checks, generic login errors, input checks, JDBC prepared statements, and basic security headers are used. This is a teaching demo, not a production payment system. For production, use HTTPS, a least-privilege DB account, secure cookie configuration, login throttling, stronger account provisioning and auditing. No actual payment is processed.
+Security: this local classroom demo stores its demo passwords in plain text at the user's request. Sessions, CSRF tokens, role-based server checks, generic login errors, input checks, JDBC prepared statements, and basic security headers are still used. Never deploy with plain-text passwords. This is a teaching demo, not a production payment system. For production, use HTTPS, a least-privilege DB account, secure cookie configuration, login throttling, stronger account provisioning and auditing. No actual payment is processed.
